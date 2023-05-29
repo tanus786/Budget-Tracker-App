@@ -5,6 +5,8 @@
 package GUI;
 
 import java.sql.*;
+import java.time.LocalDate;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -19,6 +21,9 @@ public class BudgetTracker extends javax.swing.JFrame {
     public BudgetTracker() {
         initComponents();
         displayCategory();
+        getEntry();
+        date.setSelectableDateRange(null, new java.util.Date());
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
     private void displayCategory(){
         try {
@@ -31,6 +36,27 @@ public class BudgetTracker extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, e);
         }
         
+    }
+    private  void getEntry(){
+        try {
+            javax.swing.table.DefaultTableModel dtm = (javax.swing.table.DefaultTableModel)table.getModel();
+            int rc = dtm.getRowCount();
+            while(rc--!=0){
+                dtm.removeRow(0);
+            }
+            java.time.LocalDate now = java.time.LocalDate.now();
+            java.time.LocalDate bd = now.minusDays(30);
+            ResultSet rs = database.DbConnect.stmt.executeQuery("select * from spending where s_date <='"+now+"' and s_date>='"+bd+"'");
+            int total =0;
+            while(rs.next()){
+                total +=rs.getInt("amount");
+                Object o[]={rs.getInt("sid"),rs.getString("category"),rs.getDate("s_date"),rs.getInt("amount")};
+                dtm.addRow(o);
+            }
+            totalAmt.setText(total+"");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -52,9 +78,9 @@ public class BudgetTracker extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
-        jDateChooser1 = new com.toedter.calendar.JDateChooser();
+        date = new com.toedter.calendar.JDateChooser();
         jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        amount = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         category = new javax.swing.JComboBox<>();
         jButton1 = new javax.swing.JButton();
@@ -63,9 +89,9 @@ public class BudgetTracker extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        table = new javax.swing.JTable();
         jPanel2 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
+        totalAmt = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu4 = new javax.swing.JMenu();
@@ -135,6 +161,12 @@ public class BudgetTracker extends javax.swing.JFrame {
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("Amount:");
 
+        amount.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                amountKeyTyped(evt);
+            }
+        });
+
         jLabel4.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Category:");
@@ -156,6 +188,11 @@ public class BudgetTracker extends javax.swing.JFrame {
         jButton2.setBackground(new java.awt.Color(153, 255, 102));
         jButton2.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jButton2.setText("ADD");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jButton4.setBackground(new java.awt.Color(255, 255, 153));
         jButton4.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
@@ -177,11 +214,11 @@ public class BudgetTracker extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(date, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(amount, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jButton4))
@@ -200,7 +237,7 @@ public class BudgetTracker extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(date, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -209,7 +246,7 @@ public class BudgetTracker extends javax.swing.JFrame {
                                 .addComponent(category, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jButton2)
                                 .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(amount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -219,7 +256,7 @@ public class BudgetTracker extends javax.swing.JFrame {
         );
 
         jLabel6.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
-        jLabel6.setText("This Month Spending:");
+        jLabel6.setText("Last 30 Days Spendings:");
 
         jButton3.setBackground(new java.awt.Color(255, 102, 102));
         jButton3.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
@@ -230,7 +267,7 @@ public class BudgetTracker extends javax.swing.JFrame {
             }
         });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -246,13 +283,13 @@ public class BudgetTracker extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTable1.getTableHeader().setReorderingAllowed(false);
-        jScrollPane1.setViewportView(jTable1);
+        table.getTableHeader().setReorderingAllowed(false);
+        jScrollPane1.setViewportView(table);
 
         jPanel2.setBackground(new java.awt.Color(204, 204, 204));
 
-        jLabel8.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
-        jLabel8.setText("0");
+        totalAmt.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
+        totalAmt.setText("0");
 
         jLabel7.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jLabel7.setText("Total Spending:");
@@ -265,7 +302,7 @@ public class BudgetTracker extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 576, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(totalAmt, javax.swing.GroupLayout.PREFERRED_SIZE, 576, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -273,7 +310,7 @@ public class BudgetTracker extends javax.swing.JFrame {
                 .addGap(14, 14, 14)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(jLabel8))
+                    .addComponent(totalAmt))
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
@@ -378,6 +415,36 @@ public class BudgetTracker extends javax.swing.JFrame {
         displayCategory();
     }//GEN-LAST:event_jButton4ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        try {
+            java.util.Date dt = date.getDate();
+            String s1 = amount.getText();
+            String s2 = (String)category.getSelectedItem();
+            if(dt!= null && !s1.equals("") && !s2.equals("")){
+                int amt = Integer.parseInt(s1);
+                java.sql.Date d = new java.sql.Date(dt.getTime());
+                database.DbConnect.stmt.executeUpdate("insert into spending (s_date,category,amount) values('"+d+"','"+s2+"',"+amt+")");
+                JOptionPane.showMessageDialog(null,"Expense Added Successfully!!");
+                getEntry();
+            }
+            else{
+                JOptionPane.showMessageDialog(null,"Please Fill All Details!!");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+        
+        
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void amountKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_amountKeyTyped
+        // TODO add your handling code here:
+        char ch = evt.getKeyChar();
+        if(!Character.isDigit(ch)){
+            evt.consume();
+        }
+    }//GEN-LAST:event_amountKeyTyped
+
     /**
      * @param args the command line arguments
      */
@@ -414,19 +481,19 @@ public class BudgetTracker extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField amount;
     private javax.swing.JComboBox<String> category;
+    private com.toedter.calendar.JDateChooser date;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JList<String> jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -447,7 +514,7 @@ public class BudgetTracker extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable table;
+    private javax.swing.JLabel totalAmt;
     // End of variables declaration//GEN-END:variables
 }

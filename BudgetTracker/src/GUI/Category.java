@@ -97,6 +97,12 @@ public class Category extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jLabel2.setText("Category:");
 
+        t.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tActionPerformed(evt);
+            }
+        });
+
         jButton1.setBackground(new java.awt.Color(153, 255, 153));
         jButton1.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jButton1.setText("ADD");
@@ -238,6 +244,11 @@ public class Category extends javax.swing.JFrame {
        
         }
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void tActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tActionPerformed
+        // TODO add your handling code here:
+        jButton1ActionPerformed(null);
+    }//GEN-LAST:event_tActionPerformed
 
     /**
      * @param args the command line arguments
