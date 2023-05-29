@@ -29,9 +29,9 @@ public class Category extends javax.swing.JFrame {
             while(rc-- !=0){
                 dtm.removeRow(0);
             }
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spendingdb"+"?useSSL = false","root","Tanu@123#!#");
-            Statement s = con.createStatement();
-            ResultSet res = s.executeQuery("select * from category_info");
+//            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spendingdb"+"?useSSL = false","root","Tanu@123#!#");
+//            Statement s = con.createStatement();
+            ResultSet res = database.DbConnect.stmt.executeQuery("select * from category_info");
             int sn0 = 0;
             while(res.next()){
                 String category = res.getString("category");
@@ -41,7 +41,7 @@ public class Category extends javax.swing.JFrame {
                   row.add(++sn0);
                   row.add(category);
                   dtm.addRow(row);
-                
+//                  con.close();
                 }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
@@ -97,6 +97,7 @@ public class Category extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jLabel2.setText("Category:");
 
+        jButton1.setBackground(new java.awt.Color(153, 255, 153));
         jButton1.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jButton1.setText("ADD");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -156,8 +157,14 @@ public class Category extends javax.swing.JFrame {
         table.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(table);
 
+        jButton2.setBackground(new java.awt.Color(255, 102, 102));
         jButton2.setFont(new java.awt.Font("Leelawadee", 1, 14)); // NOI18N
         jButton2.setText("Delete");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -192,14 +199,19 @@ public class Category extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+//            Class.forName("com.mysql.cj.jdbc.Driver");
             String  category = t.getText();
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spendingdb"+"?useSSL = false","root","Tanu@123#!#");
-            Statement s = con.createStatement();
-            s.executeUpdate("insert into category_info values ('"+category+"')");
+            if(!category.equals("")){
+            database.DbConnect.stmt.executeUpdate("insert into category_info values ('"+category+"')");
             JOptionPane.showMessageDialog(null, "Category Added Successfully!!");
-            con.close();
             getEntries();
+            }
+            else{
+                JOptionPane.showMessageDialog(null,"Please Enter The Category!!");
+            }
+//            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spendingdb"+"?useSSL = false","root","Tanu@123#!#");
+//            Statement s = con.createStatement();
+            
         } catch (java.sql.SQLIntegrityConstraintViolationException e) {
             JOptionPane.showMessageDialog(null,"Category Already Exists!!");
         }
@@ -207,6 +219,25 @@ public class Category extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, e);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        int r = JOptionPane.showConfirmDialog(null, "Do You Really Want To Delete This Category","Deletion Confirmation",JOptionPane.YES_NO_OPTION);
+        
+        if (r==JOptionPane.YES_NO_OPTION) {
+            int ri = table.getSelectedRow();
+        String category = (String)table.getValueAt(ri, 1);
+        try {
+//            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spendingdb"+"?useSSL = false","root","Tanu@123#!#");
+//            Statement s = con.createStatement();
+            database.DbConnect.stmt.executeUpdate("delete from category_info where category = '"+category+"'");
+            JOptionPane.showMessageDialog(null,"Category Deleted!!");
+            getEntries();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+       
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
